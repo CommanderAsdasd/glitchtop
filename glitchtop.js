@@ -397,15 +397,15 @@ $(function() {
       w = Math.floor(w / d) + 1;
       h = Math.floor(h / d) + 1;
       for ( var x = 0; x < w; x++ ) {
-				for ( var y = 0; y < h; y++ ) {
-					this.ctx.fillStyle = this.genColor();
-					for ( var a = (d-1); a >= 0; a-- ) {
-						for ( var b = (d-1); b >= 0; b-- ) {
-							this.ctx.fillRect( (x+w*a)*s, (y+h*b)*s, s, s);
-						}
-					}
-				}
-			};
+        for ( var y = 0; y < h; y++ ) {
+          this.ctx.fillStyle = this.genColor();
+          for ( var a = (d-1); a >= 0; a-- ) {
+            for ( var b = (d-1); b >= 0; b-- ) {
+              this.ctx.fillRect( (x+w*a)*s, (y+h*b)*s, s, s);
+            }
+          }
+        }
+      };
       return true;
     };
 
