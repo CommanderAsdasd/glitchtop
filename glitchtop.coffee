@@ -5,12 +5,12 @@ $ ->
       @initElements()
       @initCanvas()
       @fillScreen()
-      @initHUD()
+      @initUI()
       @initEvents()
       @initAnimation()
 
     initData: ->
-      if m = location.href.match /(\d+)px&H\=(\d+)-(\d+)&S=(\d+)-(\d+)&L=(\d+)-(\d+)&P=(\d)&A=(\d)$/
+      if m = location.href.match /(\d+)px&H\=(\d+)-(\d+)&S=(\d+)-(\d+)&L=(\d+)-(\d+)&P=(\d)&A=(\d)&I=(\d)$/
         @size = parseInt m[1]
         @hue =
           min: parseInt m[2]
@@ -23,6 +23,7 @@ $ ->
           max: parseInt m[7]
         @pattern = parseInt m[8]
         @animating = parseInt m[9]
+        @interface = parseInt m[10]
         @speed = 70
       else
         @size = 40
@@ -37,8 +38,18 @@ $ ->
           max: 80
         @pattern = 1
         @animating = 0
-        @speed = 70
+        @speed = 30
+        @interface = 1
+
       @accent = ( @hue.max + @hue.min ) / 2
+
+      @locks =
+        size: false
+        hue: false
+        sat: false
+        light: false
+        pattern: true
+        speed: true
 
     initCanvas: ->
       @view =
@@ -58,8 +69,8 @@ $ ->
         switch e.which
           when 13 then @shuffle()
           when 32 then @toggleAnimation()
-          when 27 then @toggleHUD()
-        @updateData() if @shiftHeld
+          when 27 then @toggleUI()
+        @updateParams() if @shiftHeld
         @shiftHeld = 0
 
       # mouse events
@@ -75,7 +86,7 @@ $ ->
           @fillScreen()
 
       $(document).click (e) =>
-        @toggleAnimation() if $(e.target).closest('.hud-holder').length is 0
+        @toggleAnimation() if $(e.target).closest('.ui-holder').length is 0
 
       # window events
       count = 0
@@ -88,26 +99,28 @@ $ ->
 
     initElements: ->
       @$el =
-        hudData: $('.hud-data')
-        hudHolder: $('.hud-holder')
+        uiData: $('.ui-data')
+        uiHolder: $('.ui-holder')
         shareLinkHref: $('.share-link-href')
         shareLinkTwitter: $('.share-link-twitter')
-        sliderSize: $("#slider-size")
-        sliderHue: $("#slider-hue")
-        sliderSat: $("#slider-sat")
-        sliderLight: $("#slider-light")
-        sliderPattern: $("#slider-pattern")
-        sliderSpeed: $("#slider-speed")
+        sliderSize: $('#slider-size')
+        sliderHue: $('#slider-hue')
+        sliderSat: $('#slider-sat')
+        sliderLight: $('#slider-light')
+        sliderPattern: $('#slider-pattern')
+        sliderSpeed: $('#slider-speed')
         btnAnimate: $('.btn-animate')
-        btnShuffle: $(".btn-shuffle")
-        btnCredits: $(".btn-credits")
-        btnKeyboard: $(".btn-keyboard")
-        btnShare: $(".btn-share")
+        btnShuffle: $('.btn-shuffle')
+        btnCredits: $('.btn-credits')
+        btnKeyboard: $('.btn-keyboard')
+        btnShare: $('.btn-share')
         dynamic: $('.dynamic-c')
         btn: $('.btn')
+        lock: $('.lock')
 
-    initHUD: ->
+    initUI: ->
       isQueued = 0
+
       @$el.sliderSize.dragslider
         value: @size
         rangeDrag: false
@@ -118,7 +131,7 @@ $ ->
           @size = ui.value
           @fillScreen()
         change: (e, ui) =>
-          @updateData()  unless @shiftHeld
+          @updateParams()  unless @shiftHeld
 
       @$el.sliderHue.dragslider
         range: true
@@ -131,7 +144,7 @@ $ ->
           @hue.max = ui.values[1]
           @fillScreen()
         change: (e, ui) =>
-          @updateData()  unless @shiftHeld
+          @updateParams()  unless @shiftHeld
 
       @$el.sliderSat.dragslider
         range: true
@@ -144,7 +157,7 @@ $ ->
           @sat.max = ui.values[1]
           @fillScreen()
         change: =>
-          @updateData()  unless @shiftHeld
+          @updateParams()  unless @shiftHeld
 
       @$el.sliderLight.dragslider
         range: true
@@ -157,7 +170,7 @@ $ ->
           @light.max = ui.values[1]
           @fillScreen()
         change: =>
-          @updateData()  unless @shiftHeld
+          @updateParams()  unless @shiftHeld
 
       @$el.sliderSpeed.dragslider
         value: 140 - @speed
@@ -192,7 +205,7 @@ $ ->
           @pattern = ui.value
           @fillScreen()
         change: (e, ui) =>
-          @updateData()
+          @updateParams()
 
       @$el.btnAnimate.click (e) =>
         @toggleAnimation()
@@ -216,13 +229,21 @@ $ ->
         @toggleVisibility 'share'
         e.stopPropagation()
 
+      # show UI
+      unless @interface is 0
+        @$el.uiHolder.show()
+
+      # lock state
+      @updateLockStates()
+      @$el.lock.click @toggleLock
+
       # button hover behavior
       @$el.btn.hover ->
         $(this).addClass("dynamic-c").css color: "hsl(#{@accent}, 80%, 70%)"
         true
       , ->
         $this = $(this)
-        # get button's corresponding hud box class
+        # get button's corresponding ui box class
         el = $this.attr("class").split(" ")[1].split("-")[1]
         # remove hover highlight except if box open
         unless $("." + el).is(":visible")
@@ -230,6 +251,7 @@ $ ->
           $this.removeClass "dynamic-c"
           $this.css color: "rgb(200,200,200)"
         true
+
 
     initAnimation: ->
       @startAnimation if @animating
@@ -252,7 +274,7 @@ $ ->
         @stopAnimation()
       else
         @startAnimation()
-      @updateData()
+      @updateParams()
 
     fillScreen: ->
       if @size < 20
@@ -287,23 +309,41 @@ $ ->
       true
 
     shuffle: ->
-      @randomize()
-      @updateData()
-      @updateHUD()
+      return if @randomize() is false
+      @updateParams()
+      @updateUI()
       @fillScreen()
 
     randomize: ->
-      @size = Math.round( @rand(10,100) / 10 ) * 10
-      @hue = min: @rand(0,360), max: @rand(0,360)
-      [@hue.min, @hue.max] = [@hue.max, @hue.min] if @hue.max < @hue.min
-      @sat = min: @rand(40,80), max: @rand(60,100)
-      [@sat.min, @sat.max] = [@sat.max, @sat.min] if @sat.max < @sat.min
-      @light = min: @rand(20,60), max: @rand(40,100)
-      [@light.min, @light.max] = [@light.max, @light.min] if @light.max < @light.min
+      changed = false
+
+      unless @locks.size
+        @size = Math.round( @rand(10,100) / 10 ) * 10
+        changed = true
+      unless @locks.hue
+        @hue = min: @rand(0,360), max: @rand(0,360)
+        [@hue.min, @hue.max] = [@hue.max, @hue.min] if @hue.max < @hue.min
+        changed = true
+      unless @locks.sat
+        @sat = min: @rand(40,80), max: @rand(60,100)
+        [@sat.min, @sat.max] = [@sat.max, @sat.min] if @sat.max < @sat.min
+        changed = true
+      unless @locks.light
+        @light = min: @rand(20,60), max: @rand(40,100)
+        [@light.min, @light.max] = [@light.max, @light.min] if @light.max < @light.min
+        changed = true
+      # unless @locks.pattern
+      #   @pattern = @rand(1,4)
+      #   changed = true
+      # unless @locks.speed
+      #   @speed = @rand(20,100)
+      #   changed = true
+      
+      changed
 
     deviceCheck: ->
       if navigator.userAgent.match(/iPhone/i)
-        @$el.hudHolder.remove()
+        @$el.uiHolder.remove()
         true
       false
 
@@ -318,12 +358,15 @@ $ ->
       @$el.btn.removeClass('dynamic-c').css color: 'rgb(200,200,200)'
       $('.btn-'+cl).addClass('dynamic-c').css color: "hsl(#{@accent}, 80%, 70%)"
 
-    toggleHUD: ->
-      $hud = @$el.hudHolder
-      if $hud.is(':visible')
-        $hud.hide()
+    toggleUI: ->
+      $ui = @$el.uiHolder
+      if $ui.is(':visible')
+        @interface = 0
+        $ui.hide()
       else
-        $hud.show()
+        @interface = 1
+        $ui.show()
+      @updateParams()
 
     changeUIColor: ->
       @accent = ( @hue.min + @hue.max ) / 2
@@ -335,29 +378,51 @@ $ ->
       l = light ? @rand( @light.min, @light.max )
       "hsl(#{h},#{s}%,#{l}%)"
 
-    updateData: ->
+    updateParams: ->
       @dataToURL()
       @dataToUI()
 
+    toggleLock: (e) =>
+      param = $(e.currentTarget).data 'param'
+      state = @locks[param]
+
+      if state
+        @setLockState param, false
+      else
+        @setLockState param, true
+
+    updateLockStates: ->
+      for key, val of @locks
+        @setLockState key, val
+
+    setLockState: (param, state) ->
+      @locks[param] = state
+      if state
+        $(".lock-#{param} i").attr 'class', 'icon-lock'
+      else
+        $(".lock-#{param} i").attr 'class', 'icon-lock-open'
+
     dataToURL: ->
-      location.hash = @toHash()
+      location.hash = @toParams()
 
     dataToUI: ->
       link = location.href
-      @$el.hudData.html @toStr()
+      @$el.uiData.html @toStr()
       @$el.shareLinkHref.attr 'href', link
       @$el.shareLinkTwitter.attr 'href', "http://twitter.com/home?status=I made this with %23glitchtop " + encodeURIComponent(link)
 
-    updateHUD: ->
+    updateUI: ->
       @$el.sliderSize.dragslider value: @size
       @$el.sliderHue.dragslider values: [@hue.min, @hue.max ]
       @$el.sliderSat.dragslider values: [ @sat.min, @sat.max ]
       @$el.sliderLight.dragslider values: [ @light.min, @light.max ]
+      # @$el.sliderSpeed.dragslider value: @speed
+      # @$el.sliderPattern.dragslider value: @pattern
 
-    toHash: -> "#{@size}px&H=#{@hue.min}-#{@hue.max}&S=#{@sat.min}-#{@sat.max}&L=#{@light.min}-#{@light.max}&P=#{@pattern}&A=#{@animating}"
+    toParams: -> "#{@size}px&H=#{@hue.min}-#{@hue.max}&S=#{@sat.min}-#{@sat.max}&L=#{@light.min}-#{@light.max}&P=#{@pattern}&A=#{@animating}&I=#{@interface}"
 
     toStr: -> "#{@size}px, H=#{@hue.min}-#{@hue.max}, S=#{@sat.min}-#{@sat.max}, L=#{@light.min}-#{@light.max}"
 
     rand: (min, max) -> Math.floor( Math.random() * (max - min + 1) ) + min
 
-  g = new Glitchtop
+  window.Glitchtop = new Glitchtop

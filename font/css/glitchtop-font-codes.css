@@ -1,0 +1,9 @@
+
+.icon-info:before { content: '\e800'; } /* '' */
+.icon-shuffle:before { content: '\e801'; } /* '' */
+.icon-play:before { content: '\e802'; } /* '' */
+.icon-pause:before { content: '\e803'; } /* '' */
+.icon-keyboard:before { content: '\e804'; } /* '' */
+.icon-export:before { content: '\e805'; } /* '' */
+.icon-lock:before { content: '\e806'; } /* '' */
+.icon-lock-open-alt:before { content: '\e807'; } /* '' */

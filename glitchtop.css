@@ -7,18 +7,22 @@ html,body {
 	font-family: 'Verdana', sans-serif;
 	font-weight: normal;
 }
+
 #canvas {
 	overflow: hidden;
 }
-.hud-holder {
+
+.ui-holder {
 	position: absolute;
+	display: none;
 	top: 20px;
 	right: 20px;
 	width: 300px;
 	-webkit-font-smoothing: none;
 	font-weight: lighter;
 }
-.hud {
+
+.ui {
 	margin: 0;
 	padding: 15px 20px 15px;
 	color: rgba(255, 255, 255, 0.8);
@@ -36,9 +40,11 @@ html,body {
 	-moz-user-select: none;
 	user-select: none;
 }
+
 .title {
 	text-align: center;
 }
+
 .data {
 	letter-spacing: 0;
 	padding: 5px;
@@ -50,67 +56,87 @@ html,body {
 	box-sizing: border-box;
 
 }
+
 .data-link {
 	color: rgba(255, 255, 255, 0.8);
 	text-decoration: none;
 }
+
 .controls {
 	text-align: center;
 	padding: 20px 20px 5px;
 }
+
 .info, .btns, .keyboard, .share {
 	text-transform: none;
 
 	display: none;
 }
+
 .info {
 	border-top: 5px solid rgba(0, 0, 0, 0.7);
 }
+
 .btns {
 	text-align: center;
 	display: block;
 	height: 50px;
 	padding: 0;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	user-select: none;
+	cursor: default;
 }
+
 .slider {
 	margin: 10px 0px 15px;
 	border-radius: 0 !important;
 }
+
 .label {
-	margin: 20px;
-	padding: 5px;
+	margin: 0px;
+	padding: 0px;
 	text-transform: uppercase;
 	font-weight: bold;
 	color: rgba(255, 255, 255, 0.8);
 }
+
 h1,h2,h3 {
 	margin: 5px 0;
 	padding: 0;
 	letter-spacing: 1px;
 }
+
 p {
 	margin: 10px 0;
 	padding: 0;
 }
+
 .cf-link,.cf-link:visited {
 	color: rgba(255, 255, 255, 0.8);
 	text-decoration: none;
 }
+
 .cf-link:hover {
 	color: white;
 }
+
 .info-link {
 	text-decoration: underline;
 }
+
 .info-link:hover {
 	background: rgba(255, 255, 255, 0.1);
 }
+
 .home-link {
 	text-decoration: none;
 }
+
 b {
 	font-weight:bold;
 }
+
 .btn {
 	border-radius: 100%;
 	display: inline-block;
@@ -120,6 +146,11 @@ b {
 	margin: 2px 3px;
 	text-align: center;
 	color: rgb(200, 200, 200);
+}
+
+.lock i {
+	position: relative;
+  font-size: 9px;
 }
 
 /* FIREFOX HACK */
@@ -139,12 +170,9 @@ b {
   font-weight: normal;
   font-style: normal;
 }
-.icon-info:before,
-.icon-pause:before,
-.icon-play:before,
-.icon-shuffle:before,
-.icon-keyboard:before,
-.icon-export:before {
+
+[class^="icon-"]:before,
+[class*=" icon-"]:before {
   font-family: 'glitchtop-font';
   font-style: normal;
   font-weight: lighter;
@@ -156,38 +184,36 @@ b {
   font-size: 1.4em;
   -webkit-font-smoothing: antialiased;
 }
-.icon-info:before { content: '\2139'; } /* 'ℹ' */
-.icon-keyboard:before { content: '\2328'; } /* '⌨' */
-.icon-pause:before { content: '\a2'; } /* '¢' */
-.icon-play:before { content: '\25b6'; } /* '▶' */
-.icon-export:before { content: '\a1'; } /* '¡' */
-.icon-shuffle:before { content: '\2122'; } /* '™' */
+
+.icon-info:before { content: '\e800'; } /* '' */
+.icon-shuffle:before { content: '\e801'; } /* '' */
+.icon-play:before { content: '\e802'; } /* '' */
+.icon-pause:before { content: '\e803'; } /* '' */
+.icon-keyboard:before { content: '\e804'; } /* '' */
+.icon-export:before { content: '\e805'; } /* '' */
+.icon-lock:before { content: '\e806'; } /* '' */
+.icon-lock-open:before { content: '\e807'; } /* '' */
 
 .key {
   font-size: 0.8em;
   margin-right: 2px;
 }
+
 /*!
  * jQuery UI CSS Framework 1.8.22
- *
  * Copyright 2012, AUTHORS.txt (http://jqueryui.com/about)
  * Dual licensed under the MIT or GPL Version 2 licenses.
  * http://jquery.org/license
- *
- * http://docs.jquery.com/UI/Theming/API
- */
+*/
 
 .ui-widget-content { background: rgba(255, 255, 255, 0.3); }
 .ui-widget-header { background: rgba(255, 255, 255, 0.5); }
-
 .ui-state-default, .ui-widget-header .ui-state-default { border: none; background: rgba(255, 255, 255,0.8); outline: none;}
 .ui-state-hover, .ui-widget-header .ui-state-hover, .ui-state-focus, .ui-widget-content .ui-state-focus, .ui-widget-header .ui-state-focus { background: rgba(255,255,255,1); outline: none;}
 .ui-state-active, .ui-widget-header .ui-state-active { border: none; background: rgba(255, 255, 255,0.8); outline: none;}
-
 .ui-slider { position: relative; text-align: left; cursor: -webkit-grab;  }
 .ui-slider .ui-slider-handle { position: absolute; z-index: 2; width: 0.8em; height: 1.1em; cursor: default; }
 .ui-slider .ui-slider-range { position: absolute; z-index: 1; font-size: .7em; display: block; border: 0; background-position: 0 0; }
-
 .ui-slider-horizontal { height: .5em; }
 .ui-slider-horizontal .ui-slider-handle { top: -.3em; margin-left: -.4em; cursor: -webkit-grab;}
 .ui-slider-horizontal .ui-slider-range { top: 0; height: 100%; }
