@@ -151,6 +151,7 @@ b {
 .lock i {
 	position: relative;
   font-size: 9px;
+  cursor: pointer;
 }
 
 /* FIREFOX HACK */
