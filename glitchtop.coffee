@@ -254,7 +254,7 @@ $ ->
 
 
     initAnimation: ->
-      @startAnimation if @animating
+      @startAnimation() if @animating
 
     startAnimation: ->
       @animating = 1

@@ -363,7 +363,7 @@ $(function() {
 
     Glitchtop.prototype.initAnimation = function() {
       if (this.animating) {
-        return this.startAnimation;
+        return this.startAnimation();
       }
     };
 
