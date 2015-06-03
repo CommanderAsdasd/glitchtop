@@ -113,7 +113,7 @@ $ ->
         btnShuffle: $('.btn-shuffle')
         btnCredits: $('.btn-credits')
         btnKeyboard: $('.btn-keyboard')
-        btnShare: $('.btn-share')
+        btnShare: $('.btn-spread')
         dynamic: $('.dynamic-c')
         btn: $('.btn')
         lock: $('.lock')
@@ -226,7 +226,7 @@ $ ->
         e.stopPropagation()
 
       @$el.btnShare.click (e) =>
-        @toggleVisibility 'share'
+        @toggleVisibility 'spread'
         e.stopPropagation()
 
       # show UI

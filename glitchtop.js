@@ -162,7 +162,7 @@ $(function() {
         btnShuffle: $('.btn-shuffle'),
         btnCredits: $('.btn-credits'),
         btnKeyboard: $('.btn-keyboard'),
-        btnShare: $('.btn-share'),
+        btnShare: $('.btn-spread'),
         dynamic: $('.dynamic-c'),
         btn: $('.btn'),
         lock: $('.lock')
@@ -333,7 +333,7 @@ $(function() {
       })(this));
       this.$el.btnShare.click((function(_this) {
         return function(e) {
-          _this.toggleVisibility('share');
+          _this.toggleVisibility('spread');
           return e.stopPropagation();
         };
       })(this));

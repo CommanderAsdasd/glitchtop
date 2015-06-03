@@ -67,9 +67,8 @@ html,body {
 	padding: 20px 20px 5px;
 }
 
-.info, .btns, .keyboard, .share {
+.info, .btns, .keyboard, .spread {
 	text-transform: none;
-
 	display: none;
 }
 
