@@ -1,4 +1,4 @@
-# Glitchtop
+### Glitchtop
 
 http://chrisfoley.github.io/glitchtop
 
