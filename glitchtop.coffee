@@ -1,3 +1,7 @@
+# TODO
+# • button to show UI that's visible when mouse is moving
+# • save as image
+
 $ ->
   class Glitchtop
     constructor: ->
