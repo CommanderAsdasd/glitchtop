@@ -61,8 +61,10 @@ $ ->
         pattern: false
         speed: true
 
-      @max_size = 200
+      @max_size = 150
       @min_size = 10
+      @mouse_moving = false
+      @hovering_toggle_btn = false
 
       @browser = if !!window.chrome then 'chrome' else 'notchrome'
 
@@ -114,25 +116,28 @@ $ ->
 
     initElements: ->
       @$el =
-        uiData: $('.ui-data')
-        uiHolder: $('.ui-holder')
+        uiData:        $('.ui-data')
+        uiHolder:      $('.ui-holder')
         shareLinkHref: $('.share-link-href')
-        shareLinkTwitter: $('.share-link-twitter')
-        sliderSize: $('#slider-size')
-        sliderHue: $('#slider-hue')
-        sliderSat: $('#slider-sat')
-        sliderLight: $('#slider-light')
+        shareTwitter:  $('.share-link-twitter')
+        sliderSize:    $('#slider-size')
+        sliderHue:     $('#slider-hue')
+        sliderSat:     $('#slider-sat')
+        sliderLight:   $('#slider-light')
         sliderPattern: $('#slider-pattern')
-        sliderSpeed: $('#slider-speed')
-        btnAnimate: $('.btn-animate')
-        btnShuffle: $('.btn-shuffle')
-        btnCredits: $('.btn-credits')
-        btnKeyboard: $('.btn-keyboard')
-        btnShare: $('.btn-spread')
-        dynamic: $('.dynamic-c')
-        btn: $('.btn')
-        lock: $('.lock')
-        downloadLink: $('.download-link')
+        sliderSpeed:   $('#slider-speed')
+        btnAnimate:    $('.btn-animate')
+        btnShuffle:    $('.btn-shuffle')
+        btnCredits:    $('.btn-credits')
+        btnKeyboard:   $('.btn-keyboard')
+        btnShare:      $('.btn-spread')
+        btnToggle:     $('.btn-toggle')
+        dynamicColor:  $('.dynamic-c')
+        dynamicBorder: $('.dynamic-c-border')
+        embedCode:     $('.embed-code')
+        btn:           $('.btn')
+        lock:          $('.lock')
+        downloadLink:  $('.download-link')
 
     initUI: ->
       isQueued = 0
@@ -245,32 +250,58 @@ $ ->
         @toggleVisibility 'spread'
         e.stopPropagation()
 
-      # show UI
-      unless @interface is 0
-        @$el.uiHolder.show()
+      @$el.btnToggle.click (e) =>
+        @toggleUI()
+        e.stopPropagation()
 
       # lock state
       @updateLockStates()
       @$el.lock.click @toggleLock
 
-      # button hover behavior
-      @$el.btn.hover ->
-        $(this).addClass('dynamic-c').css color: "hsl(#{@accent}, 80%, 70%)"
-        true
-      , ->
-        $this = $(this)
-        # get button's corresponding ui box class
-        el = $this.attr('class').split(' ')[1].split('-')[1]
-        # remove hover highlight except if box open
-        unless $('.' + el).is(':visible')
-          # keep highlighted while box open
-          $this.removeClass 'dynamic-c'
-          $this.css color: "rgb(200,200,200)"
-        true
+      # button hover color behavior
+      @$el.btn
+        .mouseenter (e) =>
+          $btn = $(e.target)
+          $btn.addClass 'dynamic-c'
+          $btn.css color: "hsl(#{@accent}, 80%, 70%)"
+        .mouseleave (e) =>
+          $btn = $(e.target)
+          # get button's corresponding ui box class
+          el = $btn.attr('class').split(' ')[1].split('-')[1]
+          # remove hover highlight except if box open
+          unless $('.' + el).is(':visible')
+            console.log 'UI', el, 'not visible'
+            $btn.removeAttr 'style'
+            $btn.removeClass 'dynamic-c'
+          true
 
       unless @browser is 'chrome'
         @$el.downloadLink.html 'right click here and save'
+      
+      # show or hide UI
+      if @interface is 1
+        @$el.uiHolder.show()
+      else
+        @$el.btnToggle.text '+'
+        @$el.btnToggle.fadeOut() 
 
+      # track if mouse is over toggle button
+      @$el.btnToggle
+        .mouseenter =>
+          @hovering_toggle_btn = true
+        .mouseleave =>
+          @hovering_toggle_btn = false
+        
+      # fade in toggle on mouse move
+      $(document)
+        .mousemove =>
+          clearTimeout @mouse_moving
+          @$el.btnToggle.fadeIn()
+          @mouse_moving = @_setTimeout 500, =>
+            unless @interface is 1 or @hovering_toggle_btn
+              @$el.btnToggle.fadeOut() 
+
+      # on click of download link
       @$el.downloadLink.click (e) =>
         e.target.download = @toFilename 'png'
         e.target.href = @canvas.toDataURL 'image/png'
@@ -338,23 +369,23 @@ $ ->
       changed = false
 
       unless @locks.size
-        @size = Math.round( @rand(@min_size, @max_size) / 10 ) * 10
+        @size = Math.round( @_rand(@min_size, @max_size) / 10 ) * 10
         changed = true
       unless @locks.hue
-        @hue = min: @rand(0,360), max: @rand(0,360)
+        @hue = min: @_rand(0,360), max: @_rand(0,360)
         [@hue.min, @hue.max] = [@hue.max, @hue.min] if @hue.max < @hue.min
         changed = true
       unless @locks.sat
-        @sat = min: @rand(0,60), max: @rand(50,100)
+        @sat = min: @_rand(0,60), max: @_rand(50,100)
         [@sat.min, @sat.max] = [@sat.max, @sat.min] if @sat.max < @sat.min
         changed = true
       unless @locks.light
-        @light = min: @rand(0,60), max: @rand(50,100)
+        @light = min: @_rand(0,60), max: @_rand(50,100)
         [@light.min, @light.max] = [@light.max, @light.min] if @light.max < @light.min
         changed = true
-      unless @locks.pattern
-        @pattern = @rand(1,4)
-        changed = true
+      # unless @locks.pattern
+      #   # @pattern = @_rand(1,4)
+      #   # changed = true
       
       changed
 
@@ -365,34 +396,37 @@ $ ->
       false
 
     toggleVisibility: (cl) ->
-      $el = $('.'+cl)
+      $el = $('.' + cl)
       if $el.is(":visible")
         $el.hide()
       else
         $('.info').hide()
         $el.show()
+
       # remove accent color from currently highlighted button
       @$el.btn.removeClass('dynamic-c').css color: 'rgb(200,200,200)'
-      $('.btn-'+cl).addClass('dynamic-c').css color: "hsl(#{@accent}, 80%, 70%)"
+      $('.btn-' + cl).addClass('dynamic-c').css color: "hsl(#{@accent}, 80%, 70%)"
 
     toggleUI: ->
-      $ui = @$el.uiHolder
-      if $ui.is(':visible')
+      if @$el.uiHolder.is(':visible')
+        @$el.uiHolder.fadeOut()
         @interface = 0
-        $ui.hide()
+        @$el.btnToggle.text '+'
       else
+        @$el.uiHolder.fadeIn()
         @interface = 1
-        $ui.show()
+        @$el.btnToggle.text '-'
       @updateParams()
 
     changeUIColor: ->
       @accent = ( @hue.min + @hue.max ) / 2
-      @$el.dynamic.css color: "hsl(#{@accent}, 80%, 70%)"
+      $('.dynamic-c').css color: "hsl(#{@accent}, 80%, 70%)"
+      @$el.dynamicBorder.css 'border-color': "hsl(#{@accent}, 80%, 70%)"
 
     genColor: (hue, sat, light) ->
-      h = hue ? @rand( @hue.min, @hue.max )
-      s = sat ? @rand( @sat.min, @sat.max )
-      l = light ? @rand( @light.min, @light.max )
+      h = hue ? @_rand( @hue.min, @hue.max )
+      s = sat ? @_rand( @sat.min, @sat.max )
+      l = light ? @_rand( @light.min, @light.max )
       "hsl(#{h},#{s}%,#{l}%)"
 
     updateParams: ->
@@ -426,7 +460,8 @@ $ ->
       link = location.href
       @$el.uiData.html @toStr()
       @$el.shareLinkHref.attr 'href', link
-      @$el.shareLinkTwitter.attr 'href', "http://twitter.com/home?status=I made this with %23glitchtop " + encodeURIComponent(link)
+      @$el.shareTwitter.attr 'href', "http://twitter.com/home?status=I made this with %23glitchtop " + encodeURIComponent(link)
+      @$el.embedCode.text @toEmbed()
 
     updateUI: ->
       @$el.sliderSize.dragslider value: @size
@@ -439,9 +474,13 @@ $ ->
     toParams: -> "#{@size}px&H=#{@hue.min}-#{@hue.max}&S=#{@sat.min}-#{@sat.max}&L=#{@light.min}-#{@light.max}&P=#{@pattern}&A=#{@animating}&I=#{@interface}"
 
     toStr: -> "#{@size}px, H=#{@hue.min}-#{@hue.max}, S=#{@sat.min}-#{@sat.max}, L=#{@light.min}-#{@light.max}"
+
+    toEmbed: -> """<iframe src="http://chrisfoley.github.io/glitchtop/##{@toParams()}">"""
     
     toFilename: (ext) -> "Glitchtop_#{@size}px_H#{@hue.min}-#{@hue.max}_S#{@sat.min}-#{@sat.max}_L#{@light.min}-#{@light.max}.#{ext}"
 
-    rand: (min, max) -> Math.floor( Math.random() * (max - min + 1) ) + min
+    _rand: (min, max) -> Math.floor( Math.random() * (max - min + 1) ) + min
+
+    _setTimeout: (time, func) -> window.setTimeout func, time
 
   window.Glitchtop = new Glitchtop

@@ -4,6 +4,7 @@
 	<meta charset="UTF-8">
 	<meta description="Glitchtop is an online art generator inspired by glitch art and pixel art.">
 	<title>glitchtop</title>
+	<link rel="stylesheet" type="text/css" href="jqueryui.css">
 	<link rel="stylesheet" type="text/css" href="glitchtop.css">
 	<script src="jquery.js"></script>
 	<script src="jquery-ui.js"></script>
@@ -12,6 +13,8 @@
 <body>
 
 	<div id="canvas-holder"></div>
+
+  <div class="btn-toggle">-</div>
 
 	<div class="ui-holder">
 		<div class="ui title">
@@ -39,8 +42,8 @@
 			<span class="lock lock-light dynamic-c" data-param="light"><i class="icon icon-lock"></i></span>
 			<div id="slider-light" class="slider"></div>
 
-			<label id="label-pattern" class="label dynamic-c">Patterned-ness</label>
-			<span class="lock lock-pattern dynamic-c" data-param="pattern"><i class="icon icon-lock"></i></span>
+			<label id="label-pattern" class="label dynamic-c">Repeat</label>
+			<!-- <span class="lock lock-pattern dynamic-c" data-param="pattern"><i class="icon icon-lock"></i></span> -->
 			<div id="slider-pattern" class="slider"></div>
 
 			<label id="label-speed" class="label dynamic-c">Speed</label>
@@ -64,11 +67,13 @@
 		</div>
 		<div class="ui info spread">
 		  <p>To download as an image <a class="info-link dynamic-c download-link" href="#">click here</a>.</p>
-			<p>To share these settings, use <a class="info-link share-link-href dynamic-c"  target="_blank" href="#">this link</a> or grab the link from your browser's address bar.</p>
-			<p>To save these settings for later, just bookmark the page.</p>
+		  <p>To embed on the web use the following code:</p>
+		  <p class="embed-code"></p>
+			<p>To share, use <a class="info-link share-link-href dynamic-c"  target="_blank" href="#">this link</a> or grab the link from your browser's address bar.</p>
+			<p>To save, just bookmark the page.</p>
 		</div>
 		<div class="ui info credits">
-			<p><b>Glitchtop</b> is an image generator inspired by glitch art and pixel art.</p>
+			<p><b>Glitchtop</b> is an interactive art generator inspired by glitch art and pixel art.</p>
 			<p>Built by <a class="info-link dynamic-c" href="/">cfoley.net</a>.</p> 
 			<p>View the <a class="info-link dynamic-c" href="https://github.com/chrisfoley/glitchtop">source</a> on github.</p>
 		</div>

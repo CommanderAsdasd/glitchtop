@@ -1,0 +1,25 @@
+{
+  "name": "glitchtop",
+  "version": "1.0.0",
+  "description": "Pixel art / glitch art generator.",
+  "main": "glitchtop.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chrisfoley/glitchtop.git"
+  },
+  "author": "Chris Foley <chris@cfoley.net>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/chrisfoley/glitchtop/issues"
+  },
+  "homepage": "https://chrisfoley.github.com/glitchtop",
+  "devDependencies": {
+    "browser-sync": "^2.9.1",
+    "coffee-script": "^1.10.0",
+    "gulp": "^3.9.0",
+    "gulp-coffee": "^2.3.1",
+    "gulp-sass": "^2.0.4",
+    "gulp-uglify": "^1.4.0",
+    "gulp-util": "^3.0.6"
+  }
+}

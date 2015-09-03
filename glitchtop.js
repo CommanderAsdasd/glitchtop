@@ -65,8 +65,10 @@
           pattern: false,
           speed: true
         };
-        this.max_size = 200;
+        this.max_size = 150;
         this.min_size = 10;
+        this.mouse_moving = false;
+        this.hovering_toggle_btn = false;
         return this.browser = !!window.chrome ? 'chrome' : 'notchrome';
       };
 
@@ -156,7 +158,7 @@
           uiData: $('.ui-data'),
           uiHolder: $('.ui-holder'),
           shareLinkHref: $('.share-link-href'),
-          shareLinkTwitter: $('.share-link-twitter'),
+          shareTwitter: $('.share-link-twitter'),
           sliderSize: $('#slider-size'),
           sliderHue: $('#slider-hue'),
           sliderSat: $('#slider-sat'),
@@ -168,7 +170,10 @@
           btnCredits: $('.btn-credits'),
           btnKeyboard: $('.btn-keyboard'),
           btnShare: $('.btn-spread'),
-          dynamic: $('.dynamic-c'),
+          btnToggle: $('.btn-toggle'),
+          dynamicColor: $('.dynamic-c'),
+          dynamicBorder: $('.dynamic-c-border'),
+          embedCode: $('.embed-code'),
           btn: $('.btn'),
           lock: $('.lock'),
           downloadLink: $('.download-link')
@@ -343,31 +348,65 @@
             return e.stopPropagation();
           };
         })(this));
-        if (this["interface"] !== 0) {
-          this.$el.uiHolder.show();
-        }
+        this.$el.btnToggle.click((function(_this) {
+          return function(e) {
+            _this.toggleUI();
+            return e.stopPropagation();
+          };
+        })(this));
         this.updateLockStates();
         this.$el.lock.click(this.toggleLock);
-        this.$el.btn.hover(function() {
-          $(this).addClass('dynamic-c').css({
-            color: "hsl(" + this.accent + ", 80%, 70%)"
-          });
-          return true;
-        }, function() {
-          var $this, el;
-          $this = $(this);
-          el = $this.attr('class').split(' ')[1].split('-')[1];
-          if (!$('.' + el).is(':visible')) {
-            $this.removeClass('dynamic-c');
-            $this.css({
-              color: "rgb(200,200,200)"
+        this.$el.btn.mouseenter((function(_this) {
+          return function(e) {
+            var $btn;
+            $btn = $(e.target);
+            $btn.addClass('dynamic-c');
+            return $btn.css({
+              color: "hsl(" + _this.accent + ", 80%, 70%)"
             });
-          }
-          return true;
-        });
+          };
+        })(this)).mouseleave((function(_this) {
+          return function(e) {
+            var $btn, el;
+            $btn = $(e.target);
+            el = $btn.attr('class').split(' ')[1].split('-')[1];
+            if (!$('.' + el).is(':visible')) {
+              console.log('UI', el, 'not visible');
+              $btn.removeAttr('style');
+              $btn.removeClass('dynamic-c');
+            }
+            return true;
+          };
+        })(this));
         if (this.browser !== 'chrome') {
           this.$el.downloadLink.html('right click here and save');
         }
+        if (this["interface"] === 1) {
+          this.$el.uiHolder.show();
+        } else {
+          this.$el.btnToggle.text('+');
+          this.$el.btnToggle.fadeOut();
+        }
+        this.$el.btnToggle.mouseenter((function(_this) {
+          return function() {
+            return _this.hovering_toggle_btn = true;
+          };
+        })(this)).mouseleave((function(_this) {
+          return function() {
+            return _this.hovering_toggle_btn = false;
+          };
+        })(this));
+        $(document).mousemove((function(_this) {
+          return function() {
+            clearTimeout(_this.mouse_moving);
+            _this.$el.btnToggle.fadeIn();
+            return _this.mouse_moving = _this._setTimeout(500, function() {
+              if (!(_this["interface"] === 1 || _this.hovering_toggle_btn)) {
+                return _this.$el.btnToggle.fadeOut();
+              }
+            });
+          };
+        })(this));
         return this.$el.downloadLink.click((function(_this) {
           return function(e) {
             e.target.download = _this.toFilename('png');
@@ -454,13 +493,13 @@
         var changed, ref, ref1, ref2;
         changed = false;
         if (!this.locks.size) {
-          this.size = Math.round(this.rand(this.min_size, this.max_size) / 10) * 10;
+          this.size = Math.round(this._rand(this.min_size, this.max_size) / 10) * 10;
           changed = true;
         }
         if (!this.locks.hue) {
           this.hue = {
-            min: this.rand(0, 360),
-            max: this.rand(0, 360)
+            min: this._rand(0, 360),
+            max: this._rand(0, 360)
           };
           if (this.hue.max < this.hue.min) {
             ref = [this.hue.max, this.hue.min], this.hue.min = ref[0], this.hue.max = ref[1];
@@ -469,8 +508,8 @@
         }
         if (!this.locks.sat) {
           this.sat = {
-            min: this.rand(0, 60),
-            max: this.rand(50, 100)
+            min: this._rand(0, 60),
+            max: this._rand(50, 100)
           };
           if (this.sat.max < this.sat.min) {
             ref1 = [this.sat.max, this.sat.min], this.sat.min = ref1[0], this.sat.max = ref1[1];
@@ -479,16 +518,12 @@
         }
         if (!this.locks.light) {
           this.light = {
-            min: this.rand(0, 60),
-            max: this.rand(50, 100)
+            min: this._rand(0, 60),
+            max: this._rand(50, 100)
           };
           if (this.light.max < this.light.min) {
             ref2 = [this.light.max, this.light.min], this.light.min = ref2[0], this.light.max = ref2[1];
           }
-          changed = true;
-        }
-        if (!this.locks.pattern) {
-          this.pattern = this.rand(1, 4);
           changed = true;
         }
         return changed;
@@ -520,30 +555,33 @@
       };
 
       Glitchtop.prototype.toggleUI = function() {
-        var $ui;
-        $ui = this.$el.uiHolder;
-        if ($ui.is(':visible')) {
+        if (this.$el.uiHolder.is(':visible')) {
+          this.$el.uiHolder.fadeOut();
           this["interface"] = 0;
-          $ui.hide();
+          this.$el.btnToggle.text('+');
         } else {
+          this.$el.uiHolder.fadeIn();
           this["interface"] = 1;
-          $ui.show();
+          this.$el.btnToggle.text('-');
         }
         return this.updateParams();
       };
 
       Glitchtop.prototype.changeUIColor = function() {
         this.accent = (this.hue.min + this.hue.max) / 2;
-        return this.$el.dynamic.css({
+        $('.dynamic-c').css({
           color: "hsl(" + this.accent + ", 80%, 70%)"
+        });
+        return this.$el.dynamicBorder.css({
+          'border-color': "hsl(" + this.accent + ", 80%, 70%)"
         });
       };
 
       Glitchtop.prototype.genColor = function(hue, sat, light) {
         var h, l, s;
-        h = hue != null ? hue : this.rand(this.hue.min, this.hue.max);
-        s = sat != null ? sat : this.rand(this.sat.min, this.sat.max);
-        l = light != null ? light : this.rand(this.light.min, this.light.max);
+        h = hue != null ? hue : this._rand(this.hue.min, this.hue.max);
+        s = sat != null ? sat : this._rand(this.sat.min, this.sat.max);
+        l = light != null ? light : this._rand(this.light.min, this.light.max);
         return "hsl(" + h + "," + s + "%," + l + "%)";
       };
 
@@ -592,7 +630,8 @@
         link = location.href;
         this.$el.uiData.html(this.toStr());
         this.$el.shareLinkHref.attr('href', link);
-        return this.$el.shareLinkTwitter.attr('href', "http://twitter.com/home?status=I made this with %23glitchtop " + encodeURIComponent(link));
+        this.$el.shareTwitter.attr('href', "http://twitter.com/home?status=I made this with %23glitchtop " + encodeURIComponent(link));
+        return this.$el.embedCode.text(this.toEmbed());
       };
 
       Glitchtop.prototype.updateUI = function() {
@@ -621,12 +660,20 @@
         return this.size + "px, H=" + this.hue.min + "-" + this.hue.max + ", S=" + this.sat.min + "-" + this.sat.max + ", L=" + this.light.min + "-" + this.light.max;
       };
 
+      Glitchtop.prototype.toEmbed = function() {
+        return "<iframe src=\"http://chrisfoley.github.io/glitchtop/#" + (this.toParams()) + "\">";
+      };
+
       Glitchtop.prototype.toFilename = function(ext) {
         return "Glitchtop_" + this.size + "px_H" + this.hue.min + "-" + this.hue.max + "_S" + this.sat.min + "-" + this.sat.max + "_L" + this.light.min + "-" + this.light.max + "." + ext;
       };
 
-      Glitchtop.prototype.rand = function(min, max) {
+      Glitchtop.prototype._rand = function(min, max) {
         return Math.floor(Math.random() * (max - min + 1)) + min;
+      };
+
+      Glitchtop.prototype._setTimeout = function(time, func) {
+        return window.setTimeout(func, time);
       };
 
       return Glitchtop;

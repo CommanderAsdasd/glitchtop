@@ -1,0 +1,21 @@
+
+/*!
+ * jQuery UI CSS Framework 1.8.22
+ * Copyright 2012, AUTHORS.txt (http://jqueryui.com/about)
+ * Dual licensed under the MIT or GPL Version 2 licenses.
+ * http://jquery.org/license
+*/
+
+.ui-widget-content { background: rgba(255, 255, 255, 0.3); }
+.ui-widget-header { background: rgba(255, 255, 255, 0.5); }
+.ui-state-default, .ui-widget-header .ui-state-default { border: none; background: rgba(255, 255, 255,0.8); outline: none;}
+.ui-state-hover, .ui-widget-header .ui-state-hover, .ui-state-focus, .ui-widget-content .ui-state-focus, .ui-widget-header .ui-state-focus { background: rgba(255,255,255,1); outline: none;}
+.ui-state-active, .ui-widget-header .ui-state-active { border: none; background: rgba(255, 255, 255,0.8); outline: none;}
+.ui-slider { position: relative; text-align: left; cursor: -webkit-grab;  }
+.ui-slider .ui-slider-handle { position: absolute; z-index: 2; width: 0.8em; height: 1.1em; cursor: default; }
+.ui-slider .ui-slider-range { position: absolute; z-index: 1; font-size: .7em; display: block; border: 0; background-position: 0 0; }
+.ui-slider-horizontal { height: .5em; }
+.ui-slider-horizontal .ui-slider-handle { top: -.3em; margin-left: -.4em; cursor: -webkit-grab;}
+.ui-slider-horizontal .ui-slider-range { top: 0; height: 100%; }
+.ui-slider-horizontal .ui-slider-range-min { left: 0; }
+.ui-slider-horizontal .ui-slider-range-max { right: 0; }
