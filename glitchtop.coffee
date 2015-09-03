@@ -270,7 +270,6 @@ $ ->
           el = $btn.attr('class').split(' ')[1].split('-')[1]
           # remove hover highlight except if box open
           unless $('.' + el).is(':visible')
-            console.log 'UI', el, 'not visible'
             $btn.removeAttr 'style'
             $btn.removeClass 'dynamic-c'
           true
