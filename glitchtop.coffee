@@ -1,7 +1,3 @@
-# TODO
-# • button to show UI that's visible when mouse is moving
-# • save as image
-
 $ ->
   class Glitchtop
     constructor: ->
@@ -14,20 +10,30 @@ $ ->
       @initAnimation()
 
     initData: ->
-      if m = location.href.match /(\d+)px&H\=(\d+)-(\d+)&S=(\d+)-(\d+)&L=(\d+)-(\d+)&P=(\d)&A=(\d)&I=(\d)$/
-        @size = parseInt m[1]
+      match = location.href.match ///
+        (\d+)px
+        &H\=(\d+)-(\d+)
+        &S=(\d+)-(\d+)
+        &L=(\d+)-(\d+)
+        &P=(\d)
+        &A=(\d)
+        &I=(\d)$
+      ///
+
+      if match
+        @size = parseInt match[1]
         @hue =
-          min: parseInt m[2]
-          max: parseInt m[3]
+          min: parseInt match[2]
+          max: parseInt match[3]
         @sat =
-          min: parseInt m[4]
-          max: parseInt m[5]
+          min: parseInt match[4]
+          max: parseInt match[5]
         @light =
-          min: parseInt m[6]
-          max: parseInt m[7]
-        @pattern = parseInt m[8]
-        @animating = parseInt m[9]
-        @interface = parseInt m[10]
+          min: parseInt match[6]
+          max: parseInt match[7]
+        @pattern = parseInt match[8]
+        @animating = parseInt match[9]
+        @interface = parseInt match[10]
         @speed = 70
       else
         @size = 40
@@ -52,8 +58,13 @@ $ ->
         hue: false
         sat: false
         light: false
-        pattern: true
+        pattern: false
         speed: true
+
+      @max_size = 200
+      @min_size = 10
+
+      @browser = if !!window.chrome then 'chrome' else 'notchrome'
 
     initCanvas: ->
       @view =
@@ -121,6 +132,7 @@ $ ->
         dynamic: $('.dynamic-c')
         btn: $('.btn')
         lock: $('.lock')
+        downloadLink: $('.download-link')
 
     initUI: ->
       isQueued = 0
@@ -128,8 +140,8 @@ $ ->
       @$el.sliderSize.dragslider
         value: @size
         rangeDrag: false
-        min: 10
-        max: 100
+        min: @min_size
+        max: @max_size
         step: 10
         slide: (e, ui) =>
           @size = ui.value
@@ -243,19 +255,25 @@ $ ->
 
       # button hover behavior
       @$el.btn.hover ->
-        $(this).addClass("dynamic-c").css color: "hsl(#{@accent}, 80%, 70%)"
+        $(this).addClass('dynamic-c').css color: "hsl(#{@accent}, 80%, 70%)"
         true
       , ->
         $this = $(this)
         # get button's corresponding ui box class
-        el = $this.attr("class").split(" ")[1].split("-")[1]
+        el = $this.attr('class').split(' ')[1].split('-')[1]
         # remove hover highlight except if box open
-        unless $("." + el).is(":visible")
+        unless $('.' + el).is(':visible')
           # keep highlighted while box open
-          $this.removeClass "dynamic-c"
+          $this.removeClass 'dynamic-c'
           $this.css color: "rgb(200,200,200)"
         true
 
+      unless @browser is 'chrome'
+        @$el.downloadLink.html 'right click here and save'
+
+      @$el.downloadLink.click (e) =>
+        e.target.download = @toFilename 'png'
+        e.target.href = @canvas.toDataURL 'image/png'
 
     initAnimation: ->
       @startAnimation() if @animating
@@ -295,10 +313,8 @@ $ ->
       # w & h are num of sqaures to fill screen at this sqaure size and # of mirrored subdivisions
       d = d * @pattern
       s = @size
-      w = Math.floor(@view.w / @size)
-      h = Math.floor(@view.h / @size)
-      w = Math.floor(w / d) + 1
-      h = Math.floor(h / d) + 1
+      w = Math.floor( Math.floor(@view.w / @size) / d ) + 1
+      h = Math.floor( Math.floor(@view.h / @size) / d ) + 1
 
       `for ( var x = 0; x < w; x++ ) {
         for ( var y = 0; y < h; y++ ) {
@@ -322,26 +338,23 @@ $ ->
       changed = false
 
       unless @locks.size
-        @size = Math.round( @rand(10,100) / 10 ) * 10
+        @size = Math.round( @rand(@min_size, @max_size) / 10 ) * 10
         changed = true
       unless @locks.hue
         @hue = min: @rand(0,360), max: @rand(0,360)
         [@hue.min, @hue.max] = [@hue.max, @hue.min] if @hue.max < @hue.min
         changed = true
       unless @locks.sat
-        @sat = min: @rand(40,80), max: @rand(60,100)
+        @sat = min: @rand(0,60), max: @rand(50,100)
         [@sat.min, @sat.max] = [@sat.max, @sat.min] if @sat.max < @sat.min
         changed = true
       unless @locks.light
-        @light = min: @rand(20,60), max: @rand(40,100)
+        @light = min: @rand(0,60), max: @rand(50,100)
         [@light.min, @light.max] = [@light.max, @light.min] if @light.max < @light.min
         changed = true
-      # unless @locks.pattern
-      #   @pattern = @rand(1,4)
-      #   changed = true
-      # unless @locks.speed
-      #   @speed = @rand(20,100)
-      #   changed = true
+      unless @locks.pattern
+        @pattern = @rand(1,4)
+        changed = true
       
       changed
 
@@ -420,12 +433,14 @@ $ ->
       @$el.sliderHue.dragslider values: [@hue.min, @hue.max ]
       @$el.sliderSat.dragslider values: [ @sat.min, @sat.max ]
       @$el.sliderLight.dragslider values: [ @light.min, @light.max ]
+      @$el.sliderPattern.dragslider value: @pattern
       # @$el.sliderSpeed.dragslider value: @speed
-      # @$el.sliderPattern.dragslider value: @pattern
 
     toParams: -> "#{@size}px&H=#{@hue.min}-#{@hue.max}&S=#{@sat.min}-#{@sat.max}&L=#{@light.min}-#{@light.max}&P=#{@pattern}&A=#{@animating}&I=#{@interface}"
 
     toStr: -> "#{@size}px, H=#{@hue.min}-#{@hue.max}, S=#{@sat.min}-#{@sat.max}, L=#{@light.min}-#{@light.max}"
+    
+    toFilename: (ext) -> "Glitchtop_#{@size}px_H#{@hue.min}-#{@hue.max}_S#{@sat.min}-#{@sat.max}_L#{@light.min}-#{@light.max}.#{ext}"
 
     rand: (min, max) -> Math.floor( Math.random() * (max - min + 1) ) + min
 
