@@ -34,7 +34,6 @@ $ ->
         @pattern = parseInt match[8]
         @animating = parseInt match[9]
         @interface = parseInt match[10]
-        @speed = 70
       else
         @size = 40
         @hue =
@@ -48,7 +47,6 @@ $ ->
           max: 80
         @pattern = 1
         @animating = 0
-        @speed = 30
         @interface = 1
 
       @accent = ( @hue.max + @hue.min ) / 2
@@ -63,6 +61,10 @@ $ ->
 
       @max_size = 150
       @min_size = 10
+      @min_speed = 20
+      @max_speed = 300
+      @speed = @max_speed
+
       @mouse_moving = false
       @hovering_toggle_btn = false
 
@@ -194,14 +196,14 @@ $ ->
           @updateParams()  unless @shiftHeld
 
       @$el.sliderSpeed.dragslider
-        value: 140 - @speed
+        value: @max_speed - @speed + @min_speed
         rangeDrag: false
-        min: 30
-        max: 110
+        min: @min_speed
+        max: @max_speed
         step: 10
         slide: (e, ui) =>
           # update speed while sliding
-          @speed = 140 - ui.value
+          @speed = @max_speed - ui.value + @min_speed
           if @animating?
             @stopAnimation()
             @startAnimation()

@@ -34,7 +34,6 @@ $(function() {
         this.pattern = parseInt(match[8]);
         this.animating = parseInt(match[9]);
         this["interface"] = parseInt(match[10]);
-        this.speed = 70;
       } else {
         this.size = 40;
         this.hue = {
@@ -51,7 +50,6 @@ $(function() {
         };
         this.pattern = 1;
         this.animating = 0;
-        this.speed = 30;
         this["interface"] = 1;
       }
       this.accent = (this.hue.max + this.hue.min) / 2;
@@ -65,6 +63,9 @@ $(function() {
       };
       this.max_size = 150;
       this.min_size = 10;
+      this.min_speed = 20;
+      this.max_speed = 300;
+      this.speed = this.max_speed;
       this.mouse_moving = false;
       this.hovering_toggle_btn = false;
       return this.browser = !!window.chrome ? 'chrome' : 'notchrome';
@@ -265,14 +266,14 @@ $(function() {
         })(this)
       });
       this.$el.sliderSpeed.dragslider({
-        value: 140 - this.speed,
+        value: this.max_speed - this.speed + this.min_speed,
         rangeDrag: false,
-        min: 30,
-        max: 110,
+        min: this.min_speed,
+        max: this.max_speed,
         step: 10,
         slide: (function(_this) {
           return function(e, ui) {
-            _this.speed = 140 - ui.value;
+            _this.speed = _this.max_speed - ui.value + _this.min_speed;
             if (_this.animating != null) {
               _this.stopAnimation();
               return _this.startAnimation();

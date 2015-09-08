@@ -13,7 +13,7 @@ gulp.task 'compile:sass', ->
     .pipe gulp.dest './'
 
 gulp.task 'compile:coffee', ->
-  gulp.src '*.coffee'
+  gulp.src 'app.coffee'
     .pipe coffee bare: true
     .on 'error', gutil.log
     .pipe gulp.dest './'
@@ -32,7 +32,7 @@ gulp.task 'serve', ->
       '*.js'
     ]
 
-  gulp.watch '*.coffee', ['compile:coffee']
+  gulp.watch 'app.coffee', ['compile:coffee']
   gulp.watch '*.sass', ['compile:sass']
   gulp.watch 'app.js', browserSync.reload
 
