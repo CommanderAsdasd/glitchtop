@@ -13,7 +13,7 @@ gulp.task 'compile:sass', ->
     .pipe gulp.dest './'
 
 gulp.task 'compile:coffee', ->
-  gulp.src 'glitchtop.coffee'
+  gulp.src '*.coffee'
     .pipe coffee bare: true
     .on 'error', gutil.log
     .pipe gulp.dest './'
@@ -26,11 +26,15 @@ gulp.task 'serve', ->
     browser: 'google chrome'
     server: 
       baseDir: './'
+    files: [
+      '*.html'
+      '*.css'
+      '*.js'
+    ]
 
-  gulp.watch 'glitchtop.coffee', ['compile:coffee']
+  gulp.watch '*.coffee', ['compile:coffee']
   gulp.watch '*.sass', ['compile:sass']
-  gulp.watch 'glitchtop.js', browserSync.reload
-  gulp.watch 'glitchtop.css', browserSync.reload
+  gulp.watch 'app.js', browserSync.reload
 
 # DEFAULT
 
