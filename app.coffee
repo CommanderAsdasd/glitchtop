@@ -455,7 +455,7 @@ $ ->
         $(".lock-#{param} i").attr 'class', 'icon-lock-open'
 
     dataToURL: ->
-      location.hash = @toParams()
+      history.replaceState undefined, undefined, @toParams()
 
     dataToUI: ->
       link = location.href
@@ -472,11 +472,11 @@ $ ->
       @$el.sliderPattern.dragslider value: @pattern
       # @$el.sliderSpeed.dragslider value: @speed
 
-    toParams: -> "#{@size}px&H=#{@hue.min}-#{@hue.max}&S=#{@sat.min}-#{@sat.max}&L=#{@light.min}-#{@light.max}&P=#{@pattern}&A=#{@animating}&I=#{@interface}"
+    toParams: -> "##{@size}px&H=#{@hue.min}-#{@hue.max}&S=#{@sat.min}-#{@sat.max}&L=#{@light.min}-#{@light.max}&P=#{@pattern}&A=#{@animating}&I=#{@interface}"
 
     toStr: -> "#{@size}px, H=#{@hue.min}-#{@hue.max}, S=#{@sat.min}-#{@sat.max}, L=#{@light.min}-#{@light.max}"
 
-    toEmbed: -> """<iframe src="http://chrisfoley.github.io/glitchtop/##{@toParams()}">"""
+    toEmbed: -> """<iframe src="http://chrisfoley.github.io/glitchtop/#{@toParams()}">"""
     
     toFilename: (ext) -> "Glitchtop_#{@size}px_H#{@hue.min}-#{@hue.max}_S#{@sat.min}-#{@sat.max}_L#{@light.min}-#{@light.max}.#{ext}"
 

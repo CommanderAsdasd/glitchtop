@@ -620,7 +620,7 @@ $(function() {
     };
 
     Glitchtop.prototype.dataToURL = function() {
-      return location.hash = this.toParams();
+      return history.replaceState(void 0, void 0, this.toParams());
     };
 
     Glitchtop.prototype.dataToUI = function() {
@@ -651,7 +651,7 @@ $(function() {
     };
 
     Glitchtop.prototype.toParams = function() {
-      return this.size + "px&H=" + this.hue.min + "-" + this.hue.max + "&S=" + this.sat.min + "-" + this.sat.max + "&L=" + this.light.min + "-" + this.light.max + "&P=" + this.pattern + "&A=" + this.animating + "&I=" + this["interface"];
+      return "#" + this.size + "px&H=" + this.hue.min + "-" + this.hue.max + "&S=" + this.sat.min + "-" + this.sat.max + "&L=" + this.light.min + "-" + this.light.max + "&P=" + this.pattern + "&A=" + this.animating + "&I=" + this["interface"];
     };
 
     Glitchtop.prototype.toStr = function() {
@@ -659,7 +659,7 @@ $(function() {
     };
 
     Glitchtop.prototype.toEmbed = function() {
-      return "<iframe src=\"http://chrisfoley.github.io/glitchtop/#" + (this.toParams()) + "\">";
+      return "<iframe src=\"http://chrisfoley.github.io/glitchtop/" + (this.toParams()) + "\">";
     };
 
     Glitchtop.prototype.toFilename = function(ext) {
