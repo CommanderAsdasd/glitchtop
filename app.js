@@ -16,7 +16,7 @@ $(function() {
 
     Glitchtop.prototype.initData = function() {
       var match;
-      match = location.href.match(/(\d+)px&H\=(\d+)-(\d+)&S=(\d+)-(\d+)&L=(\d+)-(\d+)&P=(\d)&A=(\d)&I=(\d)$/);
+      match = location.href.match(/(\d+)px&H\=(\d+)-(\d+)&S=(\d+)-(\d+)&L=(\d+)-(\d+)&P=(\d)&A=(\d)&I=(\d)/);
       if (match) {
         this.size = parseInt(match[1]);
         this.hue = {
@@ -94,14 +94,14 @@ $(function() {
       $(document).keyup((function(_this) {
         return function(e) {
           switch (e.which) {
-            case 13:
-              _this.shuffle();
-              break;
             case 32:
               _this.toggleAnimation();
               break;
             case 27:
               _this.toggleUI();
+              break;
+            case 83:
+              _this.shuffle();
           }
           if (_this.shiftHeld) {
             _this.updateParams();
@@ -133,11 +133,30 @@ $(function() {
           }
         };
       })(this));
-      $(document).click((function(_this) {
+      $(window).mousemove((function(_this) {
+        return function() {
+          clearTimeout(_this.mouse_moving);
+          _this.$el.btnToggle.fadeIn();
+          return _this.mouse_moving = _this._setTimeout(500, function() {
+            if (!(_this["interface"] === 1 || _this.hovering_toggle_btn)) {
+              return _this.$el.btnToggle.fadeOut();
+            }
+          });
+        };
+      })(this));
+      this.$el.btnToggle.mouseenter((function(_this) {
+        return function() {
+          return _this.hovering_toggle_btn = true;
+        };
+      })(this)).mouseleave((function(_this) {
+        return function() {
+          return _this.hovering_toggle_btn = false;
+        };
+      })(this));
+      this.$el.downloadLink.click((function(_this) {
         return function(e) {
-          if ($(e.target).closest('.ui-holder').length === 0) {
-            return _this.toggleAnimation();
-          }
+          e.target.download = _this.toFilename('png');
+          return e.target.href = _this.canvas.toDataURL('image/png');
         };
       })(this));
       count = 0;
@@ -355,62 +374,15 @@ $(function() {
       })(this));
       this.updateLockStates();
       this.$el.lock.click(this.toggleLock);
-      this.$el.btn.mouseenter((function(_this) {
-        return function(e) {
-          var $btn;
-          $btn = $(e.target);
-          $btn.addClass('dynamic-c');
-          return $btn.css({
-            color: "hsl(" + _this.accent + ", 80%, 70%)"
-          });
-        };
-      })(this)).mouseleave((function(_this) {
-        return function(e) {
-          var $btn, el;
-          $btn = $(e.target);
-          el = $btn.attr('class').split(' ')[1].split('-')[1];
-          if (!$('.' + el).is(':visible')) {
-            $btn.removeAttr('style');
-            $btn.removeClass('dynamic-c');
-          }
-          return true;
-        };
-      })(this));
       if (this.browser !== 'chrome') {
         this.$el.downloadLink.html('right click here and save');
       }
       if (this["interface"] === 1) {
-        this.$el.uiHolder.show();
+        return this.$el.uiHolder.show();
       } else {
         this.$el.btnToggle.text('+');
-        this.$el.btnToggle.fadeOut();
+        return this.$el.btnToggle.fadeOut();
       }
-      this.$el.btnToggle.mouseenter((function(_this) {
-        return function() {
-          return _this.hovering_toggle_btn = true;
-        };
-      })(this)).mouseleave((function(_this) {
-        return function() {
-          return _this.hovering_toggle_btn = false;
-        };
-      })(this));
-      $(document).mousemove((function(_this) {
-        return function() {
-          clearTimeout(_this.mouse_moving);
-          _this.$el.btnToggle.fadeIn();
-          return _this.mouse_moving = _this._setTimeout(500, function() {
-            if (!(_this["interface"] === 1 || _this.hovering_toggle_btn)) {
-              return _this.$el.btnToggle.fadeOut();
-            }
-          });
-        };
-      })(this));
-      return this.$el.downloadLink.click((function(_this) {
-        return function(e) {
-          e.target.download = _this.toFilename('png');
-          return e.target.href = _this.canvas.toDataURL('image/png');
-        };
-      })(this));
     };
 
     Glitchtop.prototype.initAnimation = function() {
@@ -455,7 +427,7 @@ $(function() {
       } else {
         this.draw(1);
       }
-      this.dataToUI();
+      this.updateUIdata();
       return this.changeUIColor();
     };
 
@@ -483,7 +455,7 @@ $(function() {
         return;
       }
       this.updateParams();
-      this.updateUI();
+      this.updateUIsliders();
       return this.fillScreen();
     };
 
@@ -527,42 +499,31 @@ $(function() {
       return changed;
     };
 
-    Glitchtop.prototype.deviceCheck = function() {
-      if (navigator.userAgent.match(/iPhone/i)) {
-        this.$el.uiHolder.remove();
-        true;
-      }
-      return false;
-    };
-
     Glitchtop.prototype.toggleVisibility = function(cl) {
-      var $el;
-      $el = $('.' + cl);
-      if ($el.is(":visible")) {
-        $el.hide();
+      var $info;
+      this.$el.btn.removeClass('dynamic-c').removeAttr('style');
+      $info = $('.' + cl);
+      if ($info.is(":visible")) {
+        return $info.hide();
       } else {
+        $('.btn-' + cl).addClass('dynamic-c').css({
+          color: "hsl(" + this.accent + ", 80%, 70%)"
+        });
         $('.info').hide();
-        $el.show();
+        return $info.show();
       }
-      this.$el.btn.removeClass('dynamic-c').css({
-        color: 'rgb(200,200,200)'
-      });
-      return $('.btn-' + cl).addClass('dynamic-c').css({
-        color: "hsl(" + this.accent + ", 80%, 70%)"
-      });
     };
 
     Glitchtop.prototype.toggleUI = function() {
       if (this.$el.uiHolder.is(':visible')) {
         this.$el.uiHolder.fadeOut();
         this["interface"] = 0;
-        this.$el.btnToggle.text('+');
+        return this.$el.btnToggle.text('+');
       } else {
         this.$el.uiHolder.fadeIn();
         this["interface"] = 1;
-        this.$el.btnToggle.text('-');
+        return this.$el.btnToggle.text('-');
       }
-      return this.updateParams();
     };
 
     Glitchtop.prototype.changeUIColor = function() {
@@ -584,8 +545,8 @@ $(function() {
     };
 
     Glitchtop.prototype.updateParams = function() {
-      this.dataToURL();
-      return this.dataToUI();
+      this.updateURL();
+      return this.updateUIdata();
     };
 
     Glitchtop.prototype.toggleLock = function(e) {
@@ -619,20 +580,24 @@ $(function() {
       }
     };
 
-    Glitchtop.prototype.dataToURL = function() {
-      return history.replaceState(void 0, void 0, this.toParams());
+    Glitchtop.prototype.updateURL = function() {
+      if (this.browser === 'chrome') {
+        return location.replace('#' + this.toParams());
+      } else {
+        return location.hash = '';
+      }
     };
 
-    Glitchtop.prototype.dataToUI = function() {
+    Glitchtop.prototype.updateUIdata = function() {
       var link;
-      link = location.href;
+      link = location.origin + '#' + this.toParams();
       this.$el.uiData.html(this.toStr());
       this.$el.shareLinkHref.attr('href', link);
       this.$el.shareTwitter.attr('href', "http://twitter.com/home?status=I made this with %23glitchtop " + encodeURIComponent(link));
       return this.$el.embedCode.text(this.toEmbed());
     };
 
-    Glitchtop.prototype.updateUI = function() {
+    Glitchtop.prototype.updateUIsliders = function() {
       this.$el.sliderSize.dragslider({
         value: this.size
       });
@@ -651,7 +616,7 @@ $(function() {
     };
 
     Glitchtop.prototype.toParams = function() {
-      return "#" + this.size + "px&H=" + this.hue.min + "-" + this.hue.max + "&S=" + this.sat.min + "-" + this.sat.max + "&L=" + this.light.min + "-" + this.light.max + "&P=" + this.pattern + "&A=" + this.animating + "&I=" + this["interface"];
+      return this.size + "px&H=" + this.hue.min + "-" + this.hue.max + "&S=" + this.sat.min + "-" + this.sat.max + "&L=" + this.light.min + "-" + this.light.max + "&P=" + this.pattern + "&A=" + this.animating + "&I=" + this["interface"];
     };
 
     Glitchtop.prototype.toStr = function() {
@@ -659,7 +624,7 @@ $(function() {
     };
 
     Glitchtop.prototype.toEmbed = function() {
-      return "<iframe src=\"http://chrisfoley.github.io/glitchtop/" + (this.toParams()) + "\">";
+      return "<iframe src=\"http://chrisfoley.github.io/glitchtop/#" + (this.toParams()) + "\">";
     };
 
     Glitchtop.prototype.toFilename = function(ext) {

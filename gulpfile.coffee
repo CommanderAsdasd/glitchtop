@@ -8,8 +8,8 @@ uglify      = require 'gulp-uglify'
 # COMPILE
 
 gulp.task 'compile:sass', ->
-  gulp.src 'glitchtop.sass'
-    .pipe sass outputStyle: 'compressed'
+  gulp.src '*.sass'
+    .pipe sass outputStyle: 'expanded'
     .pipe gulp.dest './'
 
 gulp.task 'compile:coffee', ->
@@ -18,9 +18,11 @@ gulp.task 'compile:coffee', ->
     .on 'error', gutil.log
     .pipe gulp.dest './'
 
+gulp.task 'compile:all', ['compile:sass', 'compile:coffee']
+
 # SERVE
 
-gulp.task 'serve', ->
+gulp.task 'serve', ['compile:all'], ->
   browserSync.init
     open: false
     browser: 'google chrome'
@@ -33,7 +35,6 @@ gulp.task 'serve', ->
     ]
 
   gulp.watch 'app.coffee', ['compile:coffee']
-  gulp.watch '*.sass', ['compile:sass']
   gulp.watch 'app.js', browserSync.reload
 
 # DEFAULT

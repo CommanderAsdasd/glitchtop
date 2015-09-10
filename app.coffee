@@ -17,10 +17,11 @@ $ ->
         &L=(\d+)-(\d+)
         &P=(\d)
         &A=(\d)
-        &I=(\d)$
+        &I=(\d)
       ///
 
       if match
+        # console.log 'PARAMS:', match
         @size = parseInt match[1]
         @hue =
           min: parseInt match[2]
@@ -35,6 +36,7 @@ $ ->
         @animating = parseInt match[9]
         @interface = parseInt match[10]
       else
+        # console.log 'DEFAULT'
         @size = 40
         @hue =
           min: 180
@@ -79,22 +81,25 @@ $ ->
       @ctx = @canvas.getContext("2d")
 
     initEvents: ->
-      # key events
+      
+      # KEY EVENTS
+
       @shiftHeld = 0
       $(document).keydown (e) =>
         @shiftHeld = 1 if e.shiftKey and not @shiftHeld
 
       $(document).keyup (e) =>
         switch e.which
-          when 13 then @shuffle()
           when 32 then @toggleAnimation()
           when 27 then @toggleUI()
+          when 83 then @shuffle()
         @updateParams() if @shiftHeld
         @shiftHeld = 0
 
-      # mouse events
+      # MOUSE EVENTS
+
+      # mouse move + shift: fill screen with color based on mouse position
       $(document).mousemove (e) =>
-        # shift held: fill screen with color based on mouse position
         if @shiftHeld and ( e.pageX % 5 is 1 or e.pageY % 5 is 1 )
           xHue = `( ( e.pageX / _this.view.w ) * 360 ) | 0`
           ySat = `100 - ( ( (e.pageY / _this.view.h ) * 100 ) | 0 )`
@@ -104,10 +109,33 @@ $ ->
           @sat = min: ySat, max: ySat
           @fillScreen()
 
-      $(document).click (e) =>
-        @toggleAnimation() if $(e.target).closest('.ui-holder').length is 0
+      # toggle animation on window click
+      # $(document).click (e) =>
+      #   @toggleAnimation() if $(e.target).closest('.ui-holder').length is 0
 
-      # window events
+      # fade in toggle button on mouse move
+      $(window)
+        .mousemove =>
+          clearTimeout @mouse_moving
+          @$el.btnToggle.fadeIn()
+          @mouse_moving = @_setTimeout 500, =>
+            unless @interface is 1 or @hovering_toggle_btn
+              @$el.btnToggle.fadeOut() 
+
+      # track if mouse is over toggle button
+      @$el.btnToggle
+        .mouseenter =>
+          @hovering_toggle_btn = true
+        .mouseleave =>
+          @hovering_toggle_btn = false
+        
+      # on click of download link
+      @$el.downloadLink.click (e) =>
+        e.target.download = @toFilename 'png'
+        e.target.href = @canvas.toDataURL 'image/png'
+
+      # WINDOW EVENTS
+
       count = 0
       $(window).resize =>
         # don't fire every time while resizing
@@ -260,22 +288,6 @@ $ ->
       @updateLockStates()
       @$el.lock.click @toggleLock
 
-      # button hover color behavior
-      @$el.btn
-        .mouseenter (e) =>
-          $btn = $(e.target)
-          $btn.addClass 'dynamic-c'
-          $btn.css color: "hsl(#{@accent}, 80%, 70%)"
-        .mouseleave (e) =>
-          $btn = $(e.target)
-          # get button's corresponding ui box class
-          el = $btn.attr('class').split(' ')[1].split('-')[1]
-          # remove hover highlight except if box open
-          unless $('.' + el).is(':visible')
-            $btn.removeAttr 'style'
-            $btn.removeClass 'dynamic-c'
-          true
-
       unless @browser is 'chrome'
         @$el.downloadLink.html 'right click here and save'
       
@@ -285,27 +297,6 @@ $ ->
       else
         @$el.btnToggle.text '+'
         @$el.btnToggle.fadeOut() 
-
-      # track if mouse is over toggle button
-      @$el.btnToggle
-        .mouseenter =>
-          @hovering_toggle_btn = true
-        .mouseleave =>
-          @hovering_toggle_btn = false
-        
-      # fade in toggle on mouse move
-      $(document)
-        .mousemove =>
-          clearTimeout @mouse_moving
-          @$el.btnToggle.fadeIn()
-          @mouse_moving = @_setTimeout 500, =>
-            unless @interface is 1 or @hovering_toggle_btn
-              @$el.btnToggle.fadeOut() 
-
-      # on click of download link
-      @$el.downloadLink.click (e) =>
-        e.target.download = @toFilename 'png'
-        e.target.href = @canvas.toDataURL 'image/png'
 
     initAnimation: ->
       @startAnimation() if @animating
@@ -337,7 +328,7 @@ $ ->
         @draw(2)
       else
         @draw(1)
-      @dataToUI()
+      @updateUIdata()
       @changeUIColor()
 
     draw: (d) ->
@@ -363,7 +354,7 @@ $ ->
     shuffle: ->
       return if @randomize() is false
       @updateParams()
-      @updateUI()
+      @updateUIsliders()
       @fillScreen()
 
     randomize: ->
@@ -384,29 +375,20 @@ $ ->
         @light = min: @_rand(0,60), max: @_rand(50,100)
         [@light.min, @light.max] = [@light.max, @light.min] if @light.max < @light.min
         changed = true
-      # unless @locks.pattern
-      #   # @pattern = @_rand(1,4)
-      #   # changed = true
-      
       changed
 
-    deviceCheck: ->
-      if navigator.userAgent.match(/iPhone/i)
-        @$el.uiHolder.remove()
-        true
-      false
-
     toggleVisibility: (cl) ->
-      $el = $('.' + cl)
-      if $el.is(":visible")
-        $el.hide()
-      else
-        $('.info').hide()
-        $el.show()
+      # remove accent color from btn
+      @$el.btn.removeClass('dynamic-c').removeAttr('style')
 
-      # remove accent color from currently highlighted button
-      @$el.btn.removeClass('dynamic-c').css color: 'rgb(200,200,200)'
-      $('.btn-' + cl).addClass('dynamic-c').css color: "hsl(#{@accent}, 80%, 70%)"
+      $info = $('.' + cl)
+      if $info.is(":visible")
+        $info.hide()
+      else
+        # add accent color to currently active button
+        $('.btn-' + cl).addClass('dynamic-c').css color: "hsl(#{@accent}, 80%, 70%)"
+        $('.info').hide()
+        $info.show()
 
     toggleUI: ->
       if @$el.uiHolder.is(':visible')
@@ -417,7 +399,6 @@ $ ->
         @$el.uiHolder.fadeIn()
         @interface = 1
         @$el.btnToggle.text '-'
-      @updateParams()
 
     changeUIColor: ->
       @accent = ( @hue.min + @hue.max ) / 2
@@ -431,8 +412,8 @@ $ ->
       "hsl(#{h},#{s}%,#{l}%)"
 
     updateParams: ->
-      @dataToURL()
-      @dataToUI()
+      @updateURL()
+      @updateUIdata()
 
     toggleLock: (e) =>
       param = $(e.currentTarget).data 'param'
@@ -454,29 +435,31 @@ $ ->
       else
         $(".lock-#{param} i").attr 'class', 'icon-lock-open'
 
-    dataToURL: ->
-      history.replaceState undefined, undefined, @toParams()
+    updateURL: ->
+      if @browser is 'chrome'
+        location.replace '#' + @toParams()
+      else
+        location.hash = ''
 
-    dataToUI: ->
-      link = location.href
+    updateUIdata: ->
+      link = location.origin + '#' + @toParams()
       @$el.uiData.html @toStr()
       @$el.shareLinkHref.attr 'href', link
       @$el.shareTwitter.attr 'href', "http://twitter.com/home?status=I made this with %23glitchtop " + encodeURIComponent(link)
       @$el.embedCode.text @toEmbed()
 
-    updateUI: ->
+    updateUIsliders: ->
       @$el.sliderSize.dragslider value: @size
       @$el.sliderHue.dragslider values: [@hue.min, @hue.max ]
       @$el.sliderSat.dragslider values: [ @sat.min, @sat.max ]
       @$el.sliderLight.dragslider values: [ @light.min, @light.max ]
       @$el.sliderPattern.dragslider value: @pattern
-      # @$el.sliderSpeed.dragslider value: @speed
 
-    toParams: -> "##{@size}px&H=#{@hue.min}-#{@hue.max}&S=#{@sat.min}-#{@sat.max}&L=#{@light.min}-#{@light.max}&P=#{@pattern}&A=#{@animating}&I=#{@interface}"
+    toParams: -> "#{@size}px&H=#{@hue.min}-#{@hue.max}&S=#{@sat.min}-#{@sat.max}&L=#{@light.min}-#{@light.max}&P=#{@pattern}&A=#{@animating}&I=#{@interface}"
 
     toStr: -> "#{@size}px, H=#{@hue.min}-#{@hue.max}, S=#{@sat.min}-#{@sat.max}, L=#{@light.min}-#{@light.max}"
 
-    toEmbed: -> """<iframe src="http://chrisfoley.github.io/glitchtop/#{@toParams()}">"""
+    toEmbed: -> """<iframe src="http://chrisfoley.github.io/glitchtop/##{@toParams()}">"""
     
     toFilename: (ext) -> "Glitchtop_#{@size}px_H#{@hue.min}-#{@hue.max}_S#{@sat.min}-#{@sat.max}_L#{@light.min}-#{@light.max}.#{ext}"
 
